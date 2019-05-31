@@ -112,11 +112,11 @@ def get_article_data(form_data):
 def dashboard():
   if request.method == 'GET':
     form_data = session['form_data']
-    article_data = dumps(get_article_data(form_data))
+    article_data = get_article_data(form_data)
     if request.args.get('render') == 'false':
       return jsonify({
         'form_data': form_data,
-        'article_data': article_data
+        'article_data': dumps(article_data)
       })
   else:
     form_data = initialize_form_data(request.form.to_dict())

@@ -45,7 +45,6 @@ class GKGProcessor():
     # initialize location index
     article_collection = db.test_article_collection
     article_collection.create_index([('locations.loc', GEOSPHERE)])
-    print(article_collection.index_information())
 
     # get dates to initialize the database
     init_date_strings = get_date_range_strings(query['startDate'], query['endDate'])
@@ -70,6 +69,7 @@ class GKGProcessor():
     Updates the database with information from a single day
     '''
     print(f'* Processing {date_string} Information...')
+
     # get datetime obj
     date = datetime.strptime(date_string[:8], '%Y%m%d')
 
