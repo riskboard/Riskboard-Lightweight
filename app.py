@@ -29,10 +29,10 @@ from pymongo import MongoClient
 client = MongoClient()
 db = client.test_database
 
-@app.route('/update_database', methods=["POST", "GET"])
-def updateDatabase():
+@app.route('/database', methods=["POST", "GET"])
+def database():
   if request.method == 'GET':
-    return render_template('update_database.html')
+    return render_template('database.html')
   elif request.method == 'POST':
     query = request.form.to_dict()
     processor = GKGProcessor(query=query, db=db)

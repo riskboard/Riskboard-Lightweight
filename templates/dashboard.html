@@ -16,7 +16,26 @@
 {% block content %}
 <h3 class="mt-3 display-5">{{ form_data['companyName'] }} Information</h3>
 <span>Contact Email: {{ form_data['email'] }}</span>
-<h4 class="mt-4 display-5">Incidence Heatmap</h4>
+
+<div class="dashhead mt-4">
+  <div class="dashhead-titles">
+    <h6 class="dashhead-subtitle">Dashboards</h6>
+    <h3 class="dashhead-title"><span class='icon icon-globe'></span> Incidence Heatmap</h3>
+  </div>
+
+  <div class="dashhead-toolbar">
+    <div class="input-with-icon dashhead-toolbar-item">
+      <input type="text" value="01/01/15 - 01/08/15" class="form-control" data-provide="datepicker">
+      <span class="icon icon-calendar"></span>
+    </div>
+    <span class="dashhead-toolbar-divider hidden-xs"></span>
+    <div class="btn-group dashhead-toolbar-item btn-group-thirds">
+      <button type="button" class="btn btn-outline-primary">Day</button>
+      <button type="button" class="btn btn-outline-primary active">Week</button>
+      <button type="button" class="btn btn-outline-primary">Month</button>
+    </div>
+  </div>
+</div>
 <div class="form-group">
   <label for="timeScaleSelect">Time Scale</label>
   <select class="form-control" id="timeScaleSelect">

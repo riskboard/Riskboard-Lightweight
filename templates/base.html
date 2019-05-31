@@ -9,31 +9,29 @@
   {% block head %}{% endblock %}
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bs_theme/v4/dist/toolkit-inverse.min.css') }}">
+  <!-- Additional JS Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='bs_theme/v4/dist/toolkit.min.js') }}"></script>
   <title>{% block title %}{% endblock %} - Flaskr</title>
 </head>
 <body>
-  <nav class="nav navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand ml-4" href="/">Riskboard</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarText">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/update_database">Database</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/dashboard">Dashboard</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-  <section class="content p-5 text-light" style="background-color: #222">
-    <div class="container-fluid bg-dark mx-auto p-4">
+  <ul class="nav nav-bordered bg-dark navbar-expand-lg">
+    <li class="nav-item">
+      <a class="nav-link ml-4 navbar-brand">Riskboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/">Home</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/database">Database</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/dashboard">Dashboard</a>
+    </li>
+  </ul>
+  <section class="content p-4">
+    <div class="container-fluid mx-auto p-4">
     <header class="display-4">
       {% block header %}{% endblock %}
     </header>
@@ -42,9 +40,11 @@
     {% endfor %}
     {% block content %}{% endblock %}
     </div>
-
-    <!-- Additional JS Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   </section>
+  <script>
+    $(() => {
+      $('.nav .nav_item a').removeClass('active');
+      $(`a[href="${this.location.pathname}"]`).addClass('active');
+    });
+  </script>
 </body>
