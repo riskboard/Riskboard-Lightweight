@@ -3,6 +3,12 @@ from metaphone import doublemetaphone
 import numpy as np
 import pandas as pd
 
+def get_time_from_gkg(date_string):
+  '''
+  Converts dataframe time string to real datetime
+  '''
+  return datetime.strptime(date_string[:12], '%Y%m%d%H%M')
+
 def get_date_time_obj(date):
   '''
   Creates a datetime object corresponding to a specified date string
@@ -10,51 +16,22 @@ def get_date_time_obj(date):
   'YYYY-MM-DD'
   e.g. '2019 02 19'
   '''
-  return datetime.strptime(date, '%Y-%m-%d')
+  return datetime.strptime(date, '%m/%d/%Y')
 
-def get_date_from_string(date_string):
-  return f'{date_string[:4]}-{date_string[4:6]}-{date_string[6:8]}'
+def datetime_range(start, end, delta):
+  current = start
+  while current < end:
+    yield current
+    current += delta
 
-def get_date_string_list(date_obj, interval=15):
-  '''
-  Converts a given date into a string.
-
-  Dates should be formatted as follows:
-  'YYYY MM DD'
-  e.g. '2019 02 19'
-
-  Output:
-  ['YYYYMMDD000000', 'YYYYMMDD001500', ..., 'YYYYMMDD234500']
-  Default corresponds to the 15-minute intervals of a given day
-  for access in the GDelt GKG 2.0
-  '''
-  # generate numbers
-  time_nums = np.arange(0, 236000, interval*100)
-  # generate dateString
-  date_string = date_obj.strftime("%Y%m%d")
-  # return as a list of formatted strings
-  return [f'{date_string}{time_num:06}' for time_num in time_nums]
-
-def date_range(start_date_obj, end_date_obj):
-  '''
-  Creates an iterable of dates corresponding to
-  given start date object and end date object, inclusive.
-  '''
-  for n in range(int ((end_date_obj - start_date_obj).days)):
-    yield start_date_obj + timedelta(n)
-
-def get_date_range_strings(start_date, end_date):
+def get_date_strings(start_date, end_date):
   '''
   Creates a list of strings, corresponding to 15-minute intervals
   from the specified start date to end date, inclusive of the first,
   exclusive of the second
   '''
-  start_date_obj = get_date_time_obj(start_date)
-  end_date_obj = get_date_time_obj(end_date)
-  output = []
-  for date in date_range(start_date_obj, end_date_obj):
-    output += get_date_string_list(date)
-  return output
+  times = ([f"{dt.strftime('%Y%m%d%H%M')}00" for dt in datetime_range(start_date, end_date, timedelta(minutes=15))])
+  return times
 
 def get_date_url(date_string):
   '''
@@ -62,7 +39,7 @@ def get_date_url(date_string):
   '''
   return f'http://data.gdeltproject.org/gdeltv2/{date_string}.translation.gkg.csv.zip'
 
-def get_schema_headers(schema='datacenter/utils/schema.csv'):
+def get_gkg_schema_headers(schema='datacenter/utils/gkg_schema.csv'):
   '''
   Returns headers for dataframe
   '''

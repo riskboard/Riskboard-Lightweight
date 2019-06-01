@@ -2,6 +2,7 @@ import os
 import json
 from collections import Counter
 
+import pymongo
 from flask import Flask
 from flask import (render_template, session, request,
   redirect, url_for, abort, jsonify)
@@ -9,7 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from bson.json_util import loads, dumps
 
-from .data.processor.gkg_processor import GKGProcessor
+from .data.processor.data_processor import DataProcessor
 
 # Initialize app
 app = Flask(__name__)
@@ -35,7 +36,7 @@ def database():
     return render_template('database.html')
   elif request.method == 'POST':
     query = request.form.to_dict()
-    processor = GKGProcessor(query=query, db=db)
+    processor = DataProcessor(query=query, db=db)
     return redirect(url_for('index'))
 
 @app.route('/')
@@ -46,14 +47,21 @@ def initialize_form_data(form_data):
   form_data['num_locations'] = int(form_data['num_locations'])
 
   def make_location(form_data, id):
+    name = form_data[f'location_name_{str(id)}']
+    coordinates = [form_data[f'location_long_{str(id)}'], form_data[f'location_lat_{str(id)}']]
+    if name == '' or coordinates[0] == '' or coordinates[1] == '':
+      return None
     return {
-      'name': form_data[f'locationName{str(id)}'],
-      'coordinates': [form_data[f'locationLong{str(id)}'], form_data[f'locationLat{str(id)}']]
+      'name': name,
+      'coordinates': coordinates
     }
 
-  form_data['locations'] = [make_location(form_data, i) for i in range(1, form_data['num_locations'])]
+  form_data['locations'] = [
+    y for y in (
+      make_location(form_data, i) for i in range(1, form_data['num_locations'])
+    ) if y is not None ]
 
-  form_data['companyName'] = 'New Balance'
+  form_data['company_name'] = 'New Balance'
   form_data['email'] = 'rjiang@hpair.org'
   form_data['locations'] = [
     {'name': 'Bangkok', 'coordinates': [100.5018, 13.7563]},
@@ -61,17 +69,28 @@ def initialize_form_data(form_data):
     {'name': 'Shanghai', 'coordinates': [121.4737, 31.2304]},
   ]
 
+  form_data['relevant_themes'] = None
+
   # store form data
   session['form_data'] = form_data
   return form_data
 
 def get_article_data(form_data):
+  '''
+  Gets all articles, their data, and corresponding list
+  of locations.
+  '''
   article_collection = db.test_article_collection
+  relevant_themes = form_data['relevant_themes']
+  relevant_theme_set = set(relevant_themes) if relevant_themes else None
+  location_list = []
 
-  def get_nearby_articles(location):
-    # TODO: Implement relevancy score
-    location_query = {
-      'locations.loc': {
+  def get_relevant_articles(location):
+    '''
+    Get articles near location and with relevant themes
+    '''
+    query = {
+      'geometry': {
         '$near': {
           '$geometry': {
             'type': 'Point',
@@ -81,31 +100,47 @@ def get_article_data(form_data):
         }
       }
     }
-    theme_group = {
-      '$group': {'gkg_themes'}
-    }
-    near_articles = article_collection.find(location_query)
-    if not near_articles:
-      return {
-        'count': 0,
-        'top_articles': [],
-        'themes': [],
+
+    if relevant_themes and relevant_themes != []:
+      query['rb_themes'] = {
+        '$in': relevant_themes
       }
 
-    near_articles = list(near_articles)
+    relevant_articles = article_collection.find(query).sort(
+      [('properties.relevancy_score', pymongo.DESCENDING)]
+    )
 
-    gkg_theme_counter = Counter()
-    for article in near_articles:
-      gkg_theme_counter.update(article['gkg_themes'])
+    return list(relevant_articles) if relevant_articles else []
 
-    # TODO: Filter by relevancy
-    return {
-      'count': len(near_articles),
-      'articles': near_articles[:10],
-      'themes': gkg_theme_counter.most_common(5)
+  def get_location_article_data(location, location_list):
+    '''
+    Filters articles based on key information, then
+    Creates analytics
+    '''
+    relevant_articles = get_relevant_articles(location)
+
+    theme_counter = Counter()
+    for article in relevant_articles:
+      if relevant_theme_set: theme_counter.update(
+        list(article['properties']['rb_themes']) & relevant_theme_set)
+      else: theme_counter.update(article['properties']['rb_themes'])
+
+    # Pop off uninformative themes
+    if 'Miscellaneous' in theme_counter:
+      theme_counter.pop('Miscellaneous')
+
+    article_geojson = {
+      'type': 'FeatureCollection',
+      'features': relevant_articles,
     }
 
-  article_data = [get_nearby_articles(location) for location in form_data['locations']]
+    return {
+      'count': len(relevant_articles),
+      'articles': article_geojson,
+      'themes': theme_counter.most_common(5)
+    }
+
+  article_data = [get_location_article_data(location, location_list) for location in form_data['locations']]
   return article_data
 
 @app.route('/dashboard', methods=["GET", "POST"])
@@ -116,7 +151,7 @@ def dashboard():
     if request.args.get('render') == 'false':
       return jsonify({
         'form_data': form_data,
-        'article_data': dumps(article_data)
+        'article_data': dumps(article_data),
       })
   else:
     form_data = initialize_form_data(request.form.to_dict())

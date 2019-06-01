@@ -1,0 +1,8 @@
+.dropdown-button {
+  font-size: 1.5em;
+  color: grey;
+}
+
+.dropdown-button:hover {
+  color: white;
+}

@@ -1,9 +1,36 @@
 var map;
 var form_data;
 var article_data;
+var location_data;
 var active_location_id;
 
-const initialize_heatmap = () => {
+$(() => {
+  initialize_analytics();
+});
+
+const initialize_analytics = () => {
+  $.get({
+    url: '/dashboard',
+    data: {
+      'render': false,
+      'time_scale': 1,
+    },
+    xhrFields: {
+      withCredentials: true,
+    }
+  }).then((data) => {
+    form_data = data.form_data;
+    article_data = JSON.parse(data.article_data);
+    console.log(article_data);
+    initialize_map();
+  });
+};
+
+const refresh_analytics = () => {
+  // TODO: Create function that updates parameters
+};
+
+const initialize_map = () => {
   mapboxgl.accessToken = 'pk.eyJ1IjoicmpheTk4IiwiYSI6ImNqd2FkOWE5NDA4cjEzemtkNGlkNmxqaTUifQ.Zglo0zZl1zOEf0tYynhfzw';
   map = new mapboxgl.Map({
     container: 'map', // container id
@@ -13,7 +40,10 @@ const initialize_heatmap = () => {
     minZoom: 1,
     center: [0,0],
   });
-  map.on('load', initialize_locations);
+  map.on('load', () => {
+    initialize_heatmap();
+    initialize_locations();
+  });
 };
 
 var size=100;
@@ -110,38 +140,160 @@ const initialize_locations = () => {
 
   map.on('click', 'locations', (e) => {
     active_location_id = e.features[0].properties.id;
-    $('#locationModal').modal('toggle');
+    $('#location-modal').modal('toggle');
   });
 };
 
-const refresh_data = (timeScale) => {
-  $.get({
-    url: '/dashboard',
-    data: {
-      'render': false,
-      'time_scale': 1,
+const initialize_heatmap = () => {
+  joined_articles = {
+    'type': 'FeatureCollection',
+    'features': []
+  };
+
+  joined_articles.features = article_data.map((i) => i.articles.features).flat(1);
+
+  console.log(joined_articles);
+
+  map.addSource('articles', {
+    'type': 'geojson',
+    'data': joined_articles,
+  });
+
+  map.addLayer({
+    'id': 'articles-heat',
+    'type': 'heatmap',
+    'source': 'articles',
+    'maxzoom': 9,
+    'paint': {
+      // Constant weight
+      "heatmap-weight": [
+        'interpolate',
+        ['linear'],
+        ['get', 'relevancy_score'],
+        0, 0,
+        6, 1
+      ],
+      // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+      // Begin color ramp at 0-stop with a 0-transparancy color
+      // to create a blur-like effect.
+      "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0, "rgba(33,102,172,0)",
+        0.2, "rgb(103,169,207)",
+        0.4, "rgb(209,229,240)",
+        0.6, "rgb(253,219,199)",
+        0.8, "rgb(239,138,98)",
+        1, "rgb(178,24,43)"
+      ],
+      // Increase the heatmap color weight weight by zoom level
+      // heatmap-intensity is a multiplier on top of heatmap-weight
+      "heatmap-intensity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 1,
+        9, 3
+        ],
+      // Adjust the heatmap radius by zoom level
+      "heatmap-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 2,
+        9, 20
+      ],
+      // Transition from heatmap to circle layer by zoom level
+      "heatmap-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        7, 1,
+        9, 0
+      ],
     },
-    xhrFields: {
-      withCredentials: true,
+  });
+
+  map.addLayer({
+    "id": "articles-point",
+    "type": "circle",
+    "source": "articles",
+    "minzoom": 7,
+    "paint": {
+      // Size circle radius by earthquake magnitude and zoom level
+      "circle-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        7, [
+            "interpolate",
+            ["linear"],
+            ["get", "mag"],
+            1, 1,
+            6, 4
+          ],
+          16, [
+            "interpolate",
+            ["linear"],
+            ["get", "mag"],
+            1, 5,
+            6, 50
+        ]
+      ],
+      // Color circle by earthquake magnitude
+      "circle-color": [
+        "interpolate",
+        ["linear"],
+        ["get", "mag"],
+        1, "rgba(33,102,172,0)",
+        2, "rgb(103,169,207)",
+        3, "rgb(209,229,240)",
+        4, "rgb(253,219,199)",
+        5, "rgb(239,138,98)",
+        6, "rgb(178,24,43)"
+      ],
+      "circle-stroke-color": "white",
+      "circle-stroke-width": 1,
+      // Transition from heatmap to circle layer by zoom level
+      "circle-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        7, 0,
+        8, 1
+      ]
     }
-  }).then((data) => {
-    form_data = data.form_data;
-    article_data = JSON.parse(data.article_data);
-    initialize_heatmap();
   });
 };
 
-$(() => {
-  initial_time_scale='day';
-  refresh_data(initial_time_scale);
-})
+const create_theme_statcard = (theme) => {
+  return `
+    <div class="statcard statcard-danger p-2 m-2" style="width: 150px">
+      <h3 class="statcard-number">
+        ${theme[1]}
+        <small class="delta-indicator delta-positive">6.75%</small>
+      </h3>
+      <span class="statcard-desc">${theme[0]}</span>
+    </div>
+  `
+};
 
-$('#timeScaleSelect').on('change', () => {
-  refresh_data(this.value);
-});
+const create_article_display = (article) => {
+  return `
+    <li class="list-group-item"><a href="${article.properties.url}">${article.properties.url}</a></li>
+  `
+};
 
 //triggered when modal is about to be shown
-$('#locationModal').on('show.bs.modal', function(e) {
+$('#location-modal').on('show.bs.modal', function(e) {
+  console.log(article_data);
   // populate the textbox
-  $('#locationModal .modal-title').text(form_data.locations[active_location_id].name);
+  $('#location-modal .dashhead-title').text(form_data.locations[active_location_id].name);
+  $('.location-themes').html(
+    article_data[active_location_id].themes.map(create_theme_statcard).join('')
+  );
+  $('.location-articles').html(
+    article_data[active_location_id].articles.features.map(create_article_display).join('')
+  );
 });

@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}"/>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}
+
 {% block header %}
 <h1 class="mx-auto txt-center">
   {% block title %}Company Profile{% endblock %}
@@ -10,8 +15,8 @@
 <h3 class="mt-3">Company Information</h3>
 <form id="companyForm" action="/dashboard" method="post" enctype="multipart/form-data">
   <div class="form-group">
-    <label for="companyName">Company Name</label>
-    <input type="text" class="form-control" name="companyName" id="companyName" aria-describedby="companyName" placeholder="Enter Company Name">
+    <label for="company_name">Company Name</label>
+    <input type="text" class="form-control" name="company_name" placeholder="Enter Company Name">
   </div>
   <div class="form-group">
     <label for="email">Company Email</label>
@@ -22,25 +27,26 @@
     <h3 class="mt-4">Locations</h3>
     <small id="locations" class="form-text text-muted">Enter up to 3 locations you wish to monitor.</small>
 
-    {% for i in range(1,4) %}
-    <h4 for="location{{i}}" class="mt-3">Location {{i}}</h4>
-    <label for="locationName{{i}}">Location Name</label>
-    <input type="text" class="form-control" name="locationName{{i}}" id="locationName{{i}}" placeholder="Enter Location Name">
-    <div class="form-row mt-3">
-      <div class="col">
-        <label for="locationLong{{i}}">Longitude</label>
-        <input type="text" class="form-control" name="locationLong{{i}}" id="locationLong{{i}}" placeholder="Enter Location Longitude">
+    <div id="location-inputs">
+      {% for i in range(1,4) %}
+      <div class="input-group mt-2">
+        <div class="input-group-prepend">
+          <span class="input-group-text text-light">Location Information</span>
+        </div>
+        <input type="text" class="form-control" name="location_name_{{i}}" id="location_name_{{i}}" placeholder="Name of City or Location">
+        <input type="text" class="form-control" name="location_long_{{i}}" id="location_long_{{i}}" placeholder="Longitude">
+        <input type="text" class="form-control" name="location_lat_{{i}}" id="location_lat_{{i}}" placeholder="Latitude">
       </div>
-      <div class="col">
-        <label for="locationLat{{i}}">Latitude</label>
-        <input type="text" class="form-control" name="locationLat{{i}}" id="locationLat{{i}}" placeholder="Enter Location Latitude">
-      </div>
+      {% endfor %}
     </div>
-    <label for="locationKwd{{i}}" class="mt-3">Location Keywords</label>
-    <input type="text" class="form-control" name="locationKwd{{i}}" id="locationKwd{{i}}" placeholder="Enter Location Keywords (separated by comma)">
-    {% endfor %}
+
+    <div class="text-center mt-2">
+      <span class="icon icon-chevron-with-circle-down dropdown-button"></span>
+    </div>
+
   </div>
   <input type="hidden" name="num_locations" value="3"/>
+  <input type="hidden" name="relevant_themes" value="[]"/>
   <button type="submit" class="btn btn-primary mx-auto text-center">Submit</button>
 </form>
 {% endblock %}
