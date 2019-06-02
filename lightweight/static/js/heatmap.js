@@ -19,10 +19,10 @@ const initialize_analytics = () => {
       withCredentials: true,
     }
   }).then((data) => {
+    initialize_map();
     form_data = data.form_data;
     article_data = JSON.parse(data.article_data);
     console.log(article_data);
-    initialize_map();
   });
 };
 
@@ -46,14 +46,14 @@ const initialize_map = () => {
   });
 };
 
-var size=100;
+var size=120;
 
 var pulsingDot = {
   width: size,
   height: size,
   data: new Uint8Array(size * size * 4),
 
-  onAdd: function() {
+  onAdd: function () {
     var canvas = document.createElement('canvas');
     canvas.width = this.width;
     canvas.height = this.height;

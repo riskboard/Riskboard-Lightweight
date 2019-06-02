@@ -9,7 +9,7 @@ from metaphone import doublemetaphone
 # from langdetect import detect
 # from rake_nltk import Rake
 
-from data.utils.gkg_utils import (get_time_from_gkg, metaphone_name,
+from lightweight.utils.gkg_utils import (get_time_from_gkg, metaphone_name,
   get_gkg_schema_headers, get_date_time_obj, get_date_strings, get_date_url)
 
 TYPE_ORGANIZATION = 'Organization'
@@ -17,7 +17,7 @@ TYPE_PERSON = 'Person'
 
 def get_gkg_theme_dict():
   gkg_theme_dict = {}
-  df = pd.read_csv(f'{os.getcwd()}/data/utils/gkg_theme_info.csv')
+  df = pd.read_csv(f'{os.getcwd()}/lightweight/utils/gkg_theme_info.csv')
   for index, row in df.iterrows():
     gkg_theme_dict[row.Name] = row.RB_Theme.split(';')
   return gkg_theme_dict

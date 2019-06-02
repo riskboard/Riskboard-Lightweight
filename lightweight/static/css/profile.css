@@ -1,0 +1,34 @@
+.dropdown-button {
+  font-size: 1.5em;
+  color: grey;
+}
+
+.dropdown-button:hover {
+  color: white;
+}
+
+.theme-circle-container {
+  display: table;
+}
+
+.theme-circle {
+  color: white;
+  border: 2px solid white;
+  border-radius: 50% 50% 50% 50%;
+  width: 110px;
+  height: 110px;
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.theme-circle:hover {
+  border-color: #db3236;
+  color: #db3236;
+}
+
+.theme-circle.selected {
+  border-color: #db3236;
+  background-color: #db3236;
+  color: white;
+}

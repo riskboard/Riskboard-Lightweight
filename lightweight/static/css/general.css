@@ -1,0 +1,26 @@
+.bg-black, .bg-black-shadow {
+  background-color: black;
+}
+
+.bg-black-shadow {
+  box-shadow: 5px 3px 10px black;
+}
+
+.font-white {
+  color: white !important;
+}
+
+.docs-content > h2, .docs-content > h1,
+.form-content > h2, .form-content > h1 {
+  margin-top: 50px;
+}
+
+.docs-content > h1, .form-content > h1 {
+  padding-bottom: 9px;
+  margin: 40px 0 20px;
+  border-bottom: 1px solid white;
+}
+
+.input-group-text {
+  min-width: 150px;
+}
