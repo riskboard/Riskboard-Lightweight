@@ -31,9 +31,6 @@ def initialize_form_data(form_data):
     return form_data
 
   form_data['relevant_themes'] = form_data['relevant_themes'].split(',')
-  form_data = inject_test_data(form_data)
-  print('form_data', form_data)
-  # store form data
-  session['form_data'] = form_data
-  print('added to session')
+  # form_data = inject_test_data(form_data)
+
   return form_data

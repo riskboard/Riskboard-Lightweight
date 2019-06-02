@@ -1,7 +1,9 @@
+import json
 from bson.json_util import loads, dumps
 
 from flask import (render_template, session, request,
   redirect, url_for, abort, jsonify, make_response, flash)
+
 from flask_login import login_required, current_user, logout_user, login_user
 
 from lightweight import app
@@ -48,7 +50,7 @@ def login():
     if user and User.validate_login(user['password'], form.password.data):
       user_obj = User(user['_id'])
       login_user(user_obj)
-      return redirect(url_for('profile'))
+      return redirect(url_for('dashboard'))
     data = {'message': 'Wrong username or password.', 'code': 'ERROR'}
     return render_template('login.html', form=form, data=data)
   else:
@@ -73,19 +75,20 @@ def database():
 @login_required
 def profile():
   if request.method == 'POST':
-    form_data = initialize_form_data(request.form.to_dict())
+    profile_data = db.profiles.find_one({'_id': current_user.email})
+    if not profile_data:
+      form_data = initialize_form_data(request.form.to_dict())
+      form_data['_id'] = current_user.email
+      db.profiles.insert_one(form_data)
     return redirect(url_for('dashboard'))
   return render_template('profile.html')
 
 @app.route('/', methods=["GET", "POST"])
 @login_required
 def dashboard():
-  form_data = session['form_data']
-  article_data = get_article_data(db, form_data)
+  profile_data = json.loads(dumps(db.profiles.find_one({'_id': current_user.email})))
+  if not profile_data:
+    return redirect(url_for('profile'))
+  article_data = json.loads(dumps(get_article_data(db, profile_data)))
   if request.method == 'GET':
-    if request.args.get('render') == 'false':
-      return jsonify({
-        'form_data': form_data,
-        'article_data': dumps(article_data),
-      })
-  return render_template('dashboard.html', form_data=form_data, article_data=article_data)
+    return render_template('dashboard.html', profile_data=profile_data, article_data=article_data)

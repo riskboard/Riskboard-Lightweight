@@ -64,6 +64,16 @@
   <!-- fontawesome icons -->
   <script src="https://kit.fontawesome.com/83aee8797b.js"></script>
   <script>
+    var csrf_token = "{{ csrf_token() }}";
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+
     $(() => {
       $('.nav-item a').removeClass('active');
       $(`a[href="${this.location.pathname}"]`).addClass('active');

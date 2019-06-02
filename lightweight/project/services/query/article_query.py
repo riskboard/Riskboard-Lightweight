@@ -38,8 +38,6 @@ def get_article_data(db, form_data):
         }
       })
 
-    print(query)
-
     relevant_articles = article_collection.find(query).sort(
       [('properties.relevancy_score', pymongo.DESCENDING)]
     )
