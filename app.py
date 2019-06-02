@@ -32,13 +32,15 @@ from pymongo import MongoClient
 MONGODB_URI = os.environ.get('MONGODB_URI')
 MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME')
 MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD')
+MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE')
 
 if MONGODB_URI:
   app.config['MONGODB_URI'] = MONGODB_URI
   app.config['MONGODB_USERNAME'] = MONGODB_USERNAME
   app.config['MONGODB_PASSWORD'] = MONGODB_PASSWORD
+  app.config['MONGODB_DATABASE'] = MONGODB_DATABASE
   client = MongoClient(MONGODB_URI)
-  db = client.stage_database
+  db = client[MONGODB_DATABASE]
   db.authenticate(MONGODB_USERNAME, MONGODB_PASSWORD)
 else:
   # default vars for local testing
