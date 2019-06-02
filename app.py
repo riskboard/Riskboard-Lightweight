@@ -10,7 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from bson.json_util import loads, dumps
 
-from .data.processor.data_processor import DataProcessor
+from data.processor.data_processor import DataProcessor
 
 # Initialize app
 app = Flask(__name__)

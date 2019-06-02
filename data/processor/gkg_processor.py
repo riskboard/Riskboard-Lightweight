@@ -9,7 +9,7 @@ from metaphone import doublemetaphone
 # from langdetect import detect
 # from rake_nltk import Rake
 
-from ..utils.gkg_utils import (get_time_from_gkg, metaphone_name,
+from data.utils.gkg_utils import (get_time_from_gkg, metaphone_name,
   get_gkg_schema_headers, get_date_time_obj, get_date_strings, get_date_url)
 
 TYPE_ORGANIZATION = 'Organization'
@@ -205,36 +205,36 @@ def extract_data_list(field_name, data, sep=';'):
   '''
   return list(filter(lambda x: x != 'nan' and x != '', str(data[field_name]).split(sep)))
 
-def get_article_params(url):
-  SENTENCE_COUNT=4
-  text = extractText(url)
-  language = languages.get(alpha_2=detect(text)).name
+# def get_article_params(url):
+#   SENTENCE_COUNT=4
+#   text = extractText(url)
+#   language = languages.get(alpha_2=detect(text)).name
 
-  r = Rake(language, max_length=3)
-  r.extract_keywords_from_text(text)
+#   r = Rake(language, max_length=3)
+#   r.extract_keywords_from_text(text)
 
-  kwds = r.get_ranked_phrases()[:10]
+#   kwds = r.get_ranked_phrases()[:10]
 
-  return language, kwds
+#   return language, kwds
 
-def extractText(url):
-  try:
-    with urllib.request.urlopen(url) as url:
-      html = url.read()
+# def extractText(url):
+#   try:
+#     with urllib.request.urlopen(url) as url:
+#       html = url.read()
 
-    soup = BeautifulSoup(html, "html.parser")
+#     soup = BeautifulSoup(html, "html.parser")
 
-    # kill all script and style elements
-    for script in soup(["script", "style"]):
-        script.extract()    # rip it out
-    # get text
-    text = soup.body.get_text(separator=' ')
-    # break into lines and remove leading and trailing space on each
-    lines = (line.strip() for line in text.splitlines())
-    # break multi-headlines into a line each
-    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # drop blank lines
-    text = '\n'.join(chunk for chunk in chunks if chunk)
-    return text
-  except:
-    return ''
+#     # kill all script and style elements
+#     for script in soup(["script", "style"]):
+#         script.extract()    # rip it out
+#     # get text
+#     text = soup.body.get_text(separator=' ')
+#     # break into lines and remove leading and trailing space on each
+#     lines = (line.strip() for line in text.splitlines())
+#     # break multi-headlines into a line each
+#     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+#     # drop blank lines
+#     text = '\n'.join(chunk for chunk in chunks if chunk)
+#     return text
+#   except:
+#     return ''
