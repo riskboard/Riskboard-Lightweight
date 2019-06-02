@@ -30,14 +30,20 @@ from pymongo import MongoClient
 
 # configure for hosting
 MONGODB_URI = os.environ.get('MONGODB_URI')
-print('MONGODB_URI', MONGODB_URI)
+MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME')
+MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD')
+
 if MONGODB_URI:
   app.config['MONGODB_URI'] = MONGODB_URI
+  app.config['MONGODB_USERNAME'] = MONGODB_USERNAME
+  app.config['MONGODB_PASSWORD'] = MONGODB_PASSWORD
   client = MongoClient(MONGODB_URI)
+  db = client.stage_database
+  db.authenticate(MONGODB_USERNAME, MONGODB_PASSWORD)
 else:
+  # default vars for local testing
   client = MongoClient()
-
-db = client.test_database
+  db = client.test_database
 
 @app.route('/database', methods=["POST", "GET"])
 def database():
