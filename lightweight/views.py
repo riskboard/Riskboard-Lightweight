@@ -19,28 +19,23 @@ from werkzeug.security import generate_password_hash
 def register():
   if current_user.is_authenticated:
     return redirect(url_for('dashboard'))
-
   form = RegisterForm()
-  if request.method == 'POST':
-    print('recieved post request')
-    if form.validate_on_submit():
-      print('validated...')
-      # check if user already exists
-      existing_user = db.users.find_one({'_id': form.email.data})
-      if existing_user:
-        data = {'message': 'User already exists.', 'code': 'ERROR'}
-        return render_template('register.html', form=form, data=data)
-      user_data = {
-        '_id': form.email.data,
-        'email': form.email.data,
-        'password': generate_password_hash(form.password.data)
-      }
-      print('inserting user...')
-      user_id = db.users.insert_one(user_data).inserted_id
-      if user_id:
-        user_obj = User(user_id)
-        login_user(user_obj)
-        return redirect(url_for('profile'))
+  if request.method == 'POST' and form.validate_on_submit():
+    # check if user already exists
+    existing_user = db.users.find_one({'_id': form.email.data})
+    if existing_user:
+      data = {'message': 'User already exists.', 'code': 'ERROR'}
+      return render_template('register.html', form=form, data=data)
+    user_data = {
+      '_id': form.email.data,
+      'email': form.email.data,
+      'password': generate_password_hash(form.password.data)
+    }
+    user_id = db.users.insert_one(user_data).inserted_id
+    if user_id:
+      user_obj = User(user_id)
+      login_user(user_obj)
+      return redirect(url_for('profile'))
   return render_template('register.html', form=form)
 
 @app.route('/login', methods=["POST", "GET"])
@@ -78,7 +73,6 @@ def database():
 @login_required
 def profile():
   if request.method == 'POST':
-    print('initializing form data...')
     form_data = initialize_form_data(request.form.to_dict())
     return redirect(url_for('dashboard'))
   return render_template('profile.html')
