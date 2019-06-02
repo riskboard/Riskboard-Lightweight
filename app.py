@@ -29,12 +29,12 @@ app.config.update(
 from pymongo import MongoClient
 
 # configure for hosting
-MONGO_URI = os.environ.get('MONGO_URI')
-if not MONGO_URI:
-  client = MongoClient()
+MONGODB_URI = os.environ.get('MONGODB_URI')
+if not MONGODB_URI:
+  app.config['MONGODB_URI'] = MONGODB_URI
+  client = MongoClient(MONGODB_URI)
 else:
-  app.config['MONGO_URI'] = MONGO_URI
-  client = MongoClient(MONGO_URI)
+  client = MongoClient()
 
 db = client.test_database
 
