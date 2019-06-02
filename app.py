@@ -31,7 +31,7 @@ from pymongo import MongoClient
 # configure for hosting
 MONGODB_URI = os.environ.get('MONGODB_URI')
 print('MONGODB_URI', MONGODB_URI)
-if not MONGODB_URI:
+if MONGODB_URI:
   app.config['MONGODB_URI'] = MONGODB_URI
   client = MongoClient(MONGODB_URI)
 else:
