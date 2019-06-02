@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from metaphone import doublemetaphone
-from bs4 import BeautifulSoup
-from pycountry import languages
-from langdetect import detect
-from rake_nltk import Rake
+# from bs4 import BeautifulSoup
+# from pycountry import languages
+# from langdetect import detect
+# from rake_nltk import Rake
 
 from ..utils.gkg_utils import (get_time_from_gkg, metaphone_name,
   get_gkg_schema_headers, get_date_time_obj, get_date_strings, get_date_url)

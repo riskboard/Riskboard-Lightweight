@@ -27,7 +27,15 @@ app.config.update(
 
 # Initialize database client
 from pymongo import MongoClient
-client = MongoClient()
+
+# configure for hosting
+MONGO_URI = os.environ.get('MONGO_URI')
+if not MONGO_URI:
+  client = MongoClient()
+else:
+  app.config['MONGO_URI'] = MONGO_URI
+  client = MongoClient(MONGO_URI)
+
 db = client.test_database
 
 @app.route('/database', methods=["POST", "GET"])
