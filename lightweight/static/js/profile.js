@@ -40,13 +40,73 @@ $(() => {
     themes.map(theme_field).join('')
   );
 
+  var selected_themes;
+
   $('.theme-circle').on('click', (e) => {
     $(e.target).toggleClass('selected');
 
-    var selected = $('.theme-circle.selected').map((_, el) => {
-      return $(el).attr('id');
-    }).get();
+    selected_themes = $('.theme-circle.selected').map((_, el) => $(el).attr('id')).get();
+  });
 
-    $("input[name='relevant_themes']").val(selected);
+  $('#profile-form').on('submit', (e) => {
+    // prevent event default
+    e.preventDefault();
+
+    if (!selected_themes || selected_themes.length < 5) {
+      $('#theme-error').html(`<i class="fas fa-exclamation-triangle"></i> Please select at least 5 themes.`); 
+    };
+
+    [loc_data, errors] = get_loc_data();
+    if (errors.length) {
+      var merged_error = errors.join(' ');
+      $('#location-error').html(`
+      <i class="fas fa-exclamation-triangle"></i> ${merged_error}`);
+      return false;
+    };
   });
 });
+
+const get_loc_data = () => {
+  var loc_data = [];
+  var errors = [];
+
+  // validate location information
+  const validate_loc = (loc_json) => {
+    var is_valid = true;
+    name = loc_json.name;
+    [long, lat] = loc_json.coordinates;
+    if (!long && !lat && !name) {
+      return false;
+    }
+    if (long < -180 || lat > 180) {
+      errors.push('Invalid longitude.');
+      is_valid = false;
+    }
+    if (lat < -90 || lat > 90) {
+      errors.push('Invalid latitude.');
+      is_valid = false;
+    }
+    if (typeof(name) != 'string') {
+      errors.push('Invalid name.');
+      is_valid = false;
+    }
+    return is_valid;
+  };
+
+  // validate location information and create geoJSON
+  $('.location-information').map((_, el) => {
+    var loc_array = $(el).children(':input').map((_, i) => { return i.value});
+    var loc_json = {
+      'name': loc_array[0],
+      'coordinates': [loc_array[1], loc_array[2]]
+    };
+    // if valid, push to loc_data
+    validate_loc(loc_json) ? loc_data.push(loc_json) : false;
+  });
+
+  if (loc_data.length == 0) {
+    errors.push('Please input at least one valid location.')
+  };
+
+  return [loc_data, errors];
+};
