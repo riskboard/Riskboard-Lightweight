@@ -36,6 +36,9 @@
         <li class="nav-item">
           <a class="nav-link" href="/profile">Profile</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">Logout</a>
+        </li>
       </ul>
       {% else %}
       <ul class="navbar-nav ml-auto">
@@ -53,11 +56,13 @@
   <section class="content p-2">
     <div class="container docs-content mx-auto p-2">
     {% for message in get_flashed_messages() %}
-      <div class="flash">{{ message }}</div>
+      <div class="flash font-white">{{ message }}</div>
     {% endfor %}
     {% block content %}{% endblock %}
     </div>
   </section>
+  <!-- fontawesome icons -->
+  <script src="https://kit.fontawesome.com/83aee8797b.js"></script>
   <script>
     $(() => {
       $('.nav-item a').removeClass('active');

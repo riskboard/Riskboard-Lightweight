@@ -13,14 +13,12 @@ if not APP_ENV:
   client = MongoClient()
   db = client.test_database
 else:
-  MONGODB_URI = os.environ.get('MONGODB_URI')
-  MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME')
-  MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD')
-  MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE')
-  app.config['MONGODB_URI'] = MONGODB_URI
-  app.config['MONGODB_USERNAME'] = MONGODB_USERNAME
-  app.config['MONGODB_PASSWORD'] = MONGODB_PASSWORD
-  app.config['MONGODB_DATABASE'] = MONGODB_DATABASE
-  client = MongoClient(MONGODB_URI)
-  db = client[MONGODB_DATABASE]
-  db.authenticate(MONGODB_USERNAME, MONGODB_PASSWORD)
+  app.config.update(
+    MONGODB_URI = os.environ.get('MONGODB_URI'),
+    MONGODB_USERNAME = os.environ.get('MONGODB_USERNAME'),
+    MONGODB_PASSWORD = os.environ.get('MONGODB_PASSWORD'),
+    MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE'),
+  )
+  client = MongoClient(app.config['MONGODB_URI'])
+  db = client[app.config['MONGODB_DATABASE']]
+  db.authenticate(app.config['MONGODB_USERNAME'], app.config['MONGODB_PASSWORD'])

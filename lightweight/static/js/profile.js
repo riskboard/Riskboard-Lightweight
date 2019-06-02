@@ -32,7 +32,7 @@ $(() => {
     'Discrimination', 'Dissent', 'Energy', 'Economy', 'Environment',
     'Ethnic', 'Food', 'Government', 'Health', 'Information',
     'Infrastructure', 'Investment', 'IR', 'Media', 'Military',
-    'Miscellaneous', 'Law Enforcement', 'Leadership', 'Organized Crime',
+     'Law Enforcement', 'Leadership', 'Organized Crime',
     'People', 'Politics', 'Religion', 'Social', 'Sovereignty',
     'Technology', 'Terrorism', 'Trade', 'Violence', 'Weaponry']
 

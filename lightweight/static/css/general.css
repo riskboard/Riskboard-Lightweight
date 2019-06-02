@@ -24,3 +24,7 @@
 .input-group-text {
   min-width: 150px;
 }
+
+.warning-text {
+  color: #f7f4c7;
+}

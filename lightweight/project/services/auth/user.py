@@ -1,6 +1,6 @@
 
 from flask import redirect, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from lightweight import login_manager
 from lightweight.mongo import db
 
@@ -26,10 +26,10 @@ class User():
 
 @login_manager.user_loader
 def load_user(email):
-    u = db.users.find_one({"email": email})
-    if not u:
-        return None
-    return User(u['email'])
+  u = db.users.find_one({"_id": email})
+  if not u:
+      return None
+  return User(u['_id'])
 
 @login_manager.unauthorized_handler
 def unauthorized():

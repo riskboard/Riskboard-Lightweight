@@ -1,28 +1,63 @@
 from bson.json_util import loads, dumps
 
 from flask import (render_template, session, request,
-  redirect, url_for, abort, jsonify, make_response)
-from flask_login import login_required, current_user, logout_user
+  redirect, url_for, abort, jsonify, make_response, flash)
+from flask_login import login_required, current_user, logout_user, login_user
 
 from lightweight import app
 from lightweight.mongo import db
 from lightweight.project.services.query.article_query import get_article_data
 from lightweight.project.services.processor.data_processor import DataProcessor
-from lightweight.project.serializers.profile_serializer import initialize_form_data
+from lightweight.project.forms.profile_serializer import initialize_form_data
+from lightweight.project.services.auth.user import User
+from lightweight.project.forms.login_form import LoginForm
+from lightweight.project.forms.register_form import RegisterForm
+
+from werkzeug.security import generate_password_hash
 
 @app.route('/register', methods=["POST", "GET"])
 def register():
+  if current_user.is_authenticated:
+    return redirect(url_for('dashboard'))
+
+  form = RegisterForm()
   if request.method == 'POST':
-    data = {'message': 'Created.', 'code': 'SUCCESS'}
-    return make_response(jsonify(data), 201)
-  return render_template('register.html')
+    print('recieved post request')
+    if form.validate_on_submit():
+      print('validated...')
+      # check if user already exists
+      existing_user = db.users.find_one({'_id': form.email.data})
+      if existing_user:
+        data = {'message': 'User already exists.', 'code': 'ERROR'}
+        return render_template('register.html', form=form, data=data)
+      user_data = {
+        '_id': form.email.data,
+        'email': form.email.data,
+        'password': generate_password_hash(form.password.data)
+      }
+      print('inserting user...')
+      user_id = db.users.insert_one(user_data).inserted_id
+      if user_id:
+        user_obj = User(user_id)
+        login_user(user_obj)
+        return redirect(url_for('profile'))
+  return render_template('register.html', form=form)
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
-  if request.method == 'POST':
-    data = {'message': 'Logged in.', 'code': 'SUCCESS'}
-    return make_response(jsonify(data), 201)
-  return render_template('login.html')
+  if current_user.is_authenticated:
+    return redirect(url_for('dashboard'))
+  form = LoginForm()
+  if request.method == 'POST' and form.validate_on_submit():
+    user = db.users.find_one({'_id': form.email.data})
+    if user and User.validate_login(user['password'], form.password.data):
+      user_obj = User(user['_id'])
+      login_user(user_obj)
+      return redirect(url_for('profile'))
+    data = {'message': 'Wrong username or password.', 'code': 'ERROR'}
+    return render_template('login.html', form=form, data=data)
+  else:
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
