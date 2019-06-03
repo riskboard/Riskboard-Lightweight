@@ -92,7 +92,7 @@ const get_valid_data = () => {
     'locations': loc_data,
   };
 
-  return form_data;
+  return JSON.stringify(form_data);
 };
 
 
@@ -102,6 +102,7 @@ const post_profile = (form_data) => {
     'url': '/profile',
     'data': form_data,
     'contentType': 'application/json',
+    'dataType': 'json',
   }, (response) => {
     console.log(response);
   });
@@ -114,6 +115,7 @@ const put_profile = (form_data) => {
     'url': '/profile',
     'data': form_data,
     'contentType': 'application/json',
+    'dataType': 'json',
   }, (response) => {
     console.log(response);
   });

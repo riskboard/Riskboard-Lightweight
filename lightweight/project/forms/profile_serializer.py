@@ -1,3 +1,4 @@
+import json
 from flask import session
 
 class ProfileSerializer():
@@ -12,7 +13,7 @@ class ProfileSerializer():
     Parses the profile request into python object
     '''
     company_name = request.form.get('company_name')
-    themes = request.form.get('themes')
+    themes = request.form.get('relevant_themes')
     locations = request.form.get('locations')
 
     data = {
@@ -21,6 +22,8 @@ class ProfileSerializer():
       'relevant_themes': themes,
       'locations': locations,
     }
+
+    data = self.inject_test_data(data)
 
     return data
 

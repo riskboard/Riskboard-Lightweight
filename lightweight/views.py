@@ -66,7 +66,6 @@ def logout():
 def profile():
   profile = current_user.profile
   profile_obj = json.loads(dumps(profile))
-  print(profile_obj)
   errors = []
   if request.method != 'GET':
     serializer = ProfileSerializer(current_user)
