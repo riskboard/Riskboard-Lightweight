@@ -1,5 +1,5 @@
 
-from flask import redirect, url_for
+from flask import redirect, url_for, jsonify
 from werkzeug.security import check_password_hash
 from lightweight import login_manager
 from lightweight.mongo import db
@@ -19,6 +19,10 @@ class User():
 
   def get_id(self):
     return self.email
+
+  @property
+  def profile(self):
+    return db.profiles.find_one({'_id': self.email})
 
   @staticmethod
   def validate_login(password_hash, password):

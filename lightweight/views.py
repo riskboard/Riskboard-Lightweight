@@ -10,7 +10,7 @@ from lightweight import app
 from lightweight.mongo import db
 from lightweight.project.services.query.article_query import get_article_data
 from lightweight.project.services.processor.data_processor import DataProcessor
-from lightweight.project.forms.profile_serializer import initialize_form_data
+from lightweight.project.forms.profile_serializer import ProfileSerializer
 from lightweight.project.services.auth.user import User
 from lightweight.project.forms.login_form import LoginForm
 from lightweight.project.forms.register_form import RegisterForm
@@ -61,6 +61,25 @@ def logout():
   logout_user()
   return redirect(url_for('login'))
 
+@app.route('/profile', methods=["GET", "POST", "PUT"])
+@login_required
+def profile():
+  profile = current_user.profile
+  profile_obj = json.loads(dumps(profile))
+  print(profile_obj)
+  errors = []
+  if request.method != 'GET':
+    serializer = ProfileSerializer(current_user)
+    if request.method == 'POST':
+      if not profile:
+        data = serializer.parse(request)
+        db.profiles.insert_one(data)
+      errors.append('Profile already exists.')
+    if request.method == 'PUT':
+      data = serializer.parse(request)
+      db.profiles.replace_one({'_id': current_user.email}, data)
+  return render_template('profile.html', profile_obj=profile_obj)
+
 @app.route('/database', methods=["POST", "GET"])
 @login_required
 def database():
@@ -71,24 +90,13 @@ def database():
     processor = DataProcessor(query=query, db=db)
     return redirect(url_for('dashboard'))
 
-@app.route('/profile', methods=["GET", "POST"])
-@login_required
-def profile():
-  if request.method == 'POST':
-    profile_data = db.profiles.find_one({'_id': current_user.email})
-    if not profile_data:
-      form_data = initialize_form_data(request.form.to_dict())
-      form_data['_id'] = current_user.email
-      db.profiles.insert_one(form_data)
-    return redirect(url_for('dashboard'))
-  return render_template('profile.html')
-
 @app.route('/', methods=["GET", "POST"])
 @login_required
 def dashboard():
-  profile_data = json.loads(dumps(db.profiles.find_one({'_id': current_user.email})))
-  if not profile_data:
+  profile = current_user.profile
+  profile_obj = json.loads(dumps(profile))
+  if not profile:
     return redirect(url_for('profile'))
-  article_data = json.loads(dumps(get_article_data(db, profile_data)))
+  article_data = json.loads(dumps(get_article_data(db, profile)))
   if request.method == 'GET':
-    return render_template('dashboard.html', profile_data=profile_data, article_data=article_data)
+    return render_template('dashboard.html', profile_obj=profile_obj, article_data=article_data)

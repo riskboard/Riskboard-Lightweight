@@ -5,23 +5,6 @@ $(() => {
   initialize_map();
 });
 
-const initialize_analytics = () => {
-  $.post({
-    url: '/dashboard',
-    data: {
-      'render': false,
-      'time_scale': 1,
-    },
-    contentType: 'application/json;charset=UTF-8',
-    dataType: 'json',
-  }).then((data) => {
-    initialize_map();
-    profile_data = data.profile_data;
-    article_data = JSON.parse(data.article_data);
-    console.log(article_data);
-  });
-};
-
 const refresh_analytics = () => {
   // TODO: Create function that updates parameters
 };
@@ -94,7 +77,7 @@ var pulsingDot = {
 const initialize_locations = () => {
   map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
 
-  const location_points = profile_data.locations.map( (el, id) => {
+  const location_points = profile_obj.locations.map( (el, id) => {
     if (!el.coordinates) {
       return (null, null);
     };
@@ -285,7 +268,7 @@ const create_article_display = (article) => {
 $('#location-modal').on('show.bs.modal', function(e) {
   console.log(article_data);
   // populate the textbox
-  $('#location-modal .dashhead-title').text(profile_data.locations[active_location_id].name);
+  $('#location-modal .dashhead-title').text(profile_obj.locations[active_location_id].name);
   $('.location-themes').html(
     article_data[active_location_id].themes.map(create_theme_statcard).join('')
   );

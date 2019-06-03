@@ -1,13 +1,13 @@
 import pymongo
 from collections import Counter
 
-def get_article_data(db, form_data):
+def get_article_data(db, profile):
   '''
   Gets all articles, their data, and corresponding list
   of locations.
   '''
   article_collection = db.test_article_collection
-  relevant_themes = form_data['relevant_themes']
+  relevant_themes = profile['relevant_themes']
   relevant_theme_set = set(relevant_themes) if relevant_themes else None
   location_list = []
 
@@ -72,5 +72,5 @@ def get_article_data(db, form_data):
       'themes': theme_counter.most_common(5)
     }
 
-  article_data = [get_location_article_data(location, location_list) for location in form_data['locations']]
+  article_data = [get_location_article_data(location, location_list) for location in profile['locations']]
   return article_data

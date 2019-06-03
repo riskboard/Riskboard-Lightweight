@@ -48,10 +48,10 @@
 </div>
 
 <div class="mt-2">
-  {% for i in range(profile_data['num_locations']) %}
-    <h4 class="display-7">{{ profile_data['locations'][i]['name'] }}</h4>
-    <div>{{ article_data[i]['themes'] }}</div>
-    {% for article in article_data[i]['articles'] %}
+  {% for loc in profile_obj['locations'] %}
+    <h4 class="display-7">{{ loc['name'] }}</h4>
+    <div>{{ article_data[loop.index0]['themes'] }}</div>
+    {% for article in article_data[loop.index0]['articles'] %}
       <div>({{loop.index}}) {{ article['url'] }}</div>
     {% endfor %}
   {% endfor %}
@@ -95,8 +95,7 @@
 
 <script>
   var article_data = {{ article_data|tojson }};
-  var profile_data = {{ profile_data|tojson }};
-  console.log(article_data);
+  var profile_obj = {{ profile_obj|tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
 {% endblock %}
