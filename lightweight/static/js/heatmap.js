@@ -147,7 +147,7 @@ const initialize_heatmap = () => {
       // Constant weight
       "heatmap-weight": [
         'interpolate',
-        ['linear'],
+        ['exponential', 10],
         ['get', 'relevancy_score'],
         0, 0,
         6, 1
@@ -172,7 +172,7 @@ const initialize_heatmap = () => {
         "interpolate",
         ["linear"],
         ["zoom"],
-        0, 1,
+        1, 0.2,
         9, 3
         ],
       // Adjust the heatmap radius by zoom level
@@ -188,7 +188,7 @@ const initialize_heatmap = () => {
         "interpolate",
         ["linear"],
         ["zoom"],
-        7, 1,
+        1, 0.8,
         9, 0
       ],
     },
