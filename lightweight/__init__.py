@@ -2,7 +2,7 @@ import os
 import pymongo
 from flask import Flask
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CsrfProtect
 
 app = Flask(__name__)
 
