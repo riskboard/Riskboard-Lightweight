@@ -34,7 +34,7 @@ $(() => {
     console.log(form_data);
 
     // change request type based on whether or not current profile exists
-    current_profile ? put_profile(form_data) : post_profile(form_data);
+    current_profile ? put_profile(form_data, callback) : post_profile(form_data, callback);
   });
 
   // populate current_profile
@@ -95,20 +95,23 @@ const get_valid_data = () => {
   return JSON.stringify(form_data);
 };
 
+const callback = (response) => {
+  if (response.status == '200') {
+    // TODO: create alerts
+  }
+};
 
-const post_profile = (form_data) => {
+const post_profile = (form_data, callback) => {
   // send POST request to server
   $.post({
     'url': '/profile',
     'data': form_data,
     'contentType': 'application/json',
     'dataType': 'json',
-  }, (response) => {
-    console.log(response);
-  });
+  }, callback);
 };
 
-const put_profile = (form_data) => {
+const put_profile = (form_data, callback) => {
   // send PUT request to server
   $.ajax({
     'method': 'PUT',
@@ -116,9 +119,7 @@ const put_profile = (form_data) => {
     'data': form_data,
     'contentType': 'application/json',
     'dataType': 'json',
-  }, (response) => {
-    console.log(response);
-  });
+  }, callback);
 };
 
 const get_loc_data = () => {

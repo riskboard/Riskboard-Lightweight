@@ -23,7 +23,7 @@ class ProfileSerializer():
       'locations': locations,
     }
 
-    data = self.inject_test_data(data)
+    # data = self.inject_test_data(data)
 
     return data
 
