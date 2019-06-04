@@ -9,6 +9,7 @@
 {% block content %}
 <form action="/database" method="post" enctype="multipart/form-data">
   <div class="form-group form-content">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <h1 class="mt-2">
       Update Database
     </h1>

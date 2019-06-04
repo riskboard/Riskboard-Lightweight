@@ -73,28 +73,17 @@ def profile():
       if not profile:
         data = serializer.parse(request)
         db.profiles.insert_one(data)
-        response = app.response_class(
-          response = jsonify({'message': 'Successfully created profile.'}),
-          status=200,
-          mimetype='application/json'
-        )
+        response = jsonify({'message': 'Successfully created profile', 'status': 200, 'response_type': 'application/json'})
         return response
       errors.append('Profile already exists.')
-      response = app.response_class(
-        response = jsonify({'errors': errors}),
-        status=400,
-        mimetype='application/json'
-      )
+      response = jsonify({'errors': errors, 'status': 400, 'response_type': 'application/json'})
       return response
 
     if request.method == 'PUT':
       data = serializer.parse(request)
+      print('data:', data)
       db.profiles.replace_one({'_id': current_user.email}, data)
-      response = app.response_class(
-        response = jsonify({'message': 'Successfully updated profile.'}),
-        status=200,
-        mimetype='application/json'
-      )
+      response = jsonify({'message': 'Successfully updated profile', 'status': 200, 'response_type': 'application/json'})
       return response
   return render_template('profile.html', profile_obj=profile_obj)
 

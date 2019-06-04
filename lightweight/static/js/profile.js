@@ -96,6 +96,7 @@ const get_valid_data = () => {
 };
 
 const callback = (response) => {
+  console.log(response);
   if (response.status == '200') {
     // TODO: create alerts
   }
@@ -112,6 +113,7 @@ const post_profile = (form_data, callback) => {
 };
 
 const put_profile = (form_data, callback) => {
+  console.log(form_data);
   // send PUT request to server
   $.ajax({
     'method': 'PUT',

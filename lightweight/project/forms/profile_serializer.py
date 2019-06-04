@@ -12,9 +12,10 @@ class ProfileSerializer():
     '''
     Parses the profile request into python object
     '''
-    company_name = request.form.get('company_name')
-    themes = request.form.get('relevant_themes')
-    locations = request.form.get('locations')
+    data = json.loads(request.data)
+    company_name = data['company_name']
+    themes = data['relevant_themes']
+    locations = data['locations']
 
     data = {
       '_id': self.user_id,
