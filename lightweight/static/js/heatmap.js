@@ -1,5 +1,6 @@
 var map;
 var active_location_id;
+const GKG_API_URL = 'https://api.gdeltproject.org/api/v2/geo/geo?';
 
 $(() => {
   initialize_map();
@@ -15,13 +16,14 @@ const initialize_map = () => {
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
     zoom: 1,
-    maxZoom: 10,
+    maxZoom: 13,
     minZoom: 1,
     center: [0,0],
   });
   map.on('load', () => {
     initialize_heatmap();
     initialize_locations();
+    initialize_points();
   });
 };
 
@@ -124,18 +126,28 @@ const initialize_locations = () => {
 };
 
 const initialize_heatmap = () => {
-  joined_articles = {
-    'type': 'FeatureCollection',
-    'features': []
+  const location_param = (loc) => `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
+
+  const location_query = profile_obj.locations.map((el) => location_param(el)).join(' OR ');
+
+  var params = {
+    'query': `( ${location_query} ) tone<-5`,
+    'mode': 'pointheatmap',
+    'format': 'geoJSON',
+    'sortby': 'toneasc',
   };
 
-  joined_articles.features = article_data.map((i) => i.articles.features).flat(1);
+  var query_url = `${GKG_API_URL}&${$.param( params )}`;
+  $.get({url: query_url}, (resp) => {
+    var heatmap_points = resp;
+    draw_heatmap(heatmap_points);
+  });
+};
 
-  console.log(joined_articles);
-
+const draw_heatmap = (data) => {
   map.addSource('articles', {
     'type': 'geojson',
-    'data': joined_articles,
+    'data': data,
   });
 
   map.addLayer({
@@ -147,8 +159,8 @@ const initialize_heatmap = () => {
       // Constant weight
       "heatmap-weight": [
         'interpolate',
-        ['exponential', 10],
-        ['get', 'relevancy_score'],
+        ['linear'],
+        ['get', 'count'],
         0, 0,
         6, 1
       ],
@@ -194,43 +206,59 @@ const initialize_heatmap = () => {
     },
   });
 
+}
+
+const initialize_points = () => {
+  const location_param = (loc) => `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
+
+  const location_query = profile_obj.locations.map((el) => location_param(el)).join(' OR ');
+
+  var params = {
+    'query': `( ${location_query} ) tone<-5`,
+    'mode': 'pointdata',
+    'format': 'geoJSON',
+    'sortby': 'toneasc',
+  };
+
+  var query_url = `${GKG_API_URL}&${$.param( params )}`;
+  $.get({url: query_url}, (resp) => {
+    var article_point_data = resp;
+    console.log(article_point_data);
+    draw_points(article_point_data);
+  });
+};
+
+const draw_points = (data) => {
+  map.addSource('articles-point-data', {
+    'type': 'geojson',
+    'data': data,
+  });
+
   map.addLayer({
     "id": "articles-point",
     "type": "circle",
-    "source": "articles",
-    "minzoom": 7,
+    "source": "articles-point-data",
+    "minzoom": 5,
     "paint": {
       // Size circle radius by earthquake magnitude and zoom level
       "circle-radius": [
         "interpolate",
         ["linear"],
         ["zoom"],
-        7, [
-            "interpolate",
-            ["linear"],
-            ["get", "mag"],
-            1, 1,
-            6, 4
-          ],
-          16, [
-            "interpolate",
-            ["linear"],
-            ["get", "mag"],
-            1, 5,
-            6, 50
-        ]
+        5, ['/', ['number', ['get', 'count'], 10], 50],
+        13, ['/', ['number', ['get', 'count'], 10], 60] 
       ],
       // Color circle by earthquake magnitude
       "circle-color": [
         "interpolate",
         ["linear"],
-        ["get", "mag"],
-        1, "rgba(33,102,172,0)",
-        2, "rgb(103,169,207)",
-        3, "rgb(209,229,240)",
-        4, "rgb(253,219,199)",
-        5, "rgb(239,138,98)",
-        6, "rgb(178,24,43)"
+        ["get", "count"],
+        100, "rgba(33,102,172,0)",
+        200, "rgb(103,169,207)",
+        300, "rgb(209,229,240)",
+        400, "rgb(253,219,199)",
+        500, "rgb(239,138,98)",
+        600, "rgb(178,24,43)"
       ],
       "circle-stroke-color": "white",
       "circle-stroke-width": 1,
@@ -243,6 +271,31 @@ const initialize_heatmap = () => {
         8, 1
       ]
     }
+  });
+
+  map.on('click', 'articles-point', (e) => {
+    console.log('clicked');
+    var coordinates = e.features[0].geometry.coordinates.slice();
+    var article_count = e.features[0].properties.count;
+    var inner_html = e.features[0].properties.html;
+    var img_url = e.features[0].properties.shareimage;
+
+    var html = `<img src="${img_url}" class="w-100"></img><div>${inner_html}</div>`
+
+    new mapboxgl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(html)
+      .addTo(map);
+  });
+
+  // Change the cursor to a pointer when the mouse is over the places layer.
+  map.on('mouseenter', 'articles-point', function () {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+
+  // Change it back to a pointer when it leaves.
+  map.on('mouseleave', 'articles-point', function () {
+    map.getCanvas().style.cursor = '';
   });
 };
 
