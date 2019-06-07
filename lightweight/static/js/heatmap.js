@@ -1,6 +1,7 @@
 var map;
 var active_location_id;
 const GKG_API_URL = 'https://api.gdeltproject.org/api/v2/geo/geo?';
+const GKG_GEOJSON_URL='https://api.gdeltproject.org/api/v1/gkg_geojson';
 
 $(() => {
   initialize_map();
@@ -22,8 +23,8 @@ const initialize_map = () => {
   });
   map.on('load', () => {
     initialize_heatmap();
-    initialize_locations();
     initialize_points();
+    initialize_locations();
   });
 };
 
@@ -209,12 +210,14 @@ const draw_heatmap = (data) => {
 }
 
 const initialize_points = () => {
-  const location_param = (loc) => `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
+  total_data = profile_obj.locations.map(initialize_loc_points);
+};
 
-  const location_query = profile_obj.locations.map((el) => location_param(el)).join(' OR ');
+const initialize_loc_points = (loc, id) => {
+  const location_param = `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
 
   var params = {
-    'query': `( ${location_query} ) tone<-5`,
+    'query': `( ${location_param} ) tone<-5`,
     'mode': 'pointdata',
     'format': 'geoJSON',
     'sortby': 'toneasc',
@@ -223,29 +226,30 @@ const initialize_points = () => {
   var query_url = `${GKG_API_URL}&${$.param( params )}`;
   $.get({url: query_url}, (resp) => {
     var article_point_data = resp;
-    console.log(article_point_data);
-    draw_points(article_point_data);
+    draw_points(article_point_data, id);
   });
 };
 
-const draw_points = (data) => {
-  map.addSource('articles-point-data', {
+const draw_points = (data, id) => {
+  map.addSource(`articles-point-data-${id}`, {
     'type': 'geojson',
     'data': data,
   });
 
+  console.log(data);
+
   map.addLayer({
-    "id": "articles-point",
+    "id": `articles-point-${id}`,
     "type": "circle",
-    "source": "articles-point-data",
-    "minzoom": 5,
+    "source": `articles-point-data-${id}`,
+    "minzoom": 3,
     "paint": {
       // Size circle radius by earthquake magnitude and zoom level
       "circle-radius": [
         "interpolate",
         ["linear"],
         ["zoom"],
-        5, ['/', ['number', ['get', 'count'], 10], 50],
+        5, ['/', ['number', ['get', 'count'], 10], 70],
         13, ['/', ['number', ['get', 'count'], 10], 60] 
       ],
       // Color circle by earthquake magnitude
@@ -260,7 +264,7 @@ const draw_points = (data) => {
         500, "rgb(239,138,98)",
         600, "rgb(178,24,43)"
       ],
-      "circle-stroke-color": "white",
+      "circle-stroke-color": "rgba(255,255,255,0.4)",
       "circle-stroke-width": 1,
       // Transition from heatmap to circle layer by zoom level
       "circle-opacity": [
@@ -273,30 +277,30 @@ const draw_points = (data) => {
     }
   });
 
-  map.on('click', 'articles-point', (e) => {
-    console.log('clicked');
-    var coordinates = e.features[0].geometry.coordinates.slice();
-    var article_count = e.features[0].properties.count;
-    var inner_html = e.features[0].properties.html;
-    var img_url = e.features[0].properties.shareimage;
-
-    var html = `<img src="${img_url}" class="w-100"></img><div>${inner_html}</div>`
-
-    new mapboxgl.Popup()
-      .setLngLat(coordinates)
-      .setHTML(html)
-      .addTo(map);
+  map.on('click', `articles-point-${id}`, (e) => {
+    fillin_flashpoint_modal(e);
   });
+};
 
-  // Change the cursor to a pointer when the mouse is over the places layer.
-  map.on('mouseenter', 'articles-point', function () {
-    map.getCanvas().style.cursor = 'pointer';
-  });
+const fillin_flashpoint_modal = (e) => {
+  // set modal image
+  var img_url = e.features[0].properties.shareimage;
+  var img_html = `<img src="${img_url}" class="w-100"></img>`;
+  $('#flashpoint-image').html(img_html);
 
-  // Change it back to a pointer when it leaves.
-  map.on('mouseleave', 'articles-point', function () {
-    map.getCanvas().style.cursor = '';
-  });
+  // set modal information header
+  var coordinates = e.features[0].geometry.coordinates.slice();
+  coordinates = coordinates.map((s) => s.toFixed(3));
+  var article_count = e.features[0].properties.count;
+  $('#flashpoint-modal .dashhead-title').text(`${article_count} Articles`);
+  $('#flashpoint-modal .dashhead-subtitle').text(`LONG: ${coordinates[0]}, LAT: ${coordinates[1]}`)
+
+  // add articles
+  var inner_html = e.features[0].properties.html;
+  $('#flashpoint-articles').html(inner_html);
+
+  // show modal
+  $('#flashpoint-modal').modal('toggle');
 };
 
 const create_theme_statcard = (theme) => {
@@ -319,11 +323,10 @@ const create_article_display = (article) => {
 
 //triggered when modal is about to be shown
 $('#location-modal').on('show.bs.modal', function(e) {
-  console.log(article_data);
   // populate the textbox
   $('#location-modal .dashhead-title').text(profile_obj.locations[active_location_id].name);
   $('.location-themes').html(
-    article_data[active_location_id].themes.map(create_theme_statcard).join('')
+    query_result[active_location_id].themes.map(create_theme_statcard).join('')
   );
   $('.location-articles').html(
     article_data[active_location_id].articles.features.map(create_article_display).join('')

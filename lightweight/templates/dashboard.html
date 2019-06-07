@@ -41,22 +41,6 @@
   <button type="button" class="btn btn-sm btn-pill btn-danger">Danger</button>
 </div>
 
-<div class="dashhead">
-  <div class="dashhead-titles mt-4">
-    <h3 class="dashhead-title"><span class='icon icon-globe'></span> Insights</h3>
-  </div>
-</div>
-
-<div class="mt-2">
-  {% for loc in profile_obj['locations'] %}
-    <h4 class="display-7">{{ loc['name'] }}</h4>
-    <div>{{ article_data[loop.index0]['themes'] }}</div>
-    {% for article in article_data[loop.index0]['articles'] %}
-      <div>({{loop.index}}) {{ article['url'] }}</div>
-    {% endfor %}
-  {% endfor %}
-</div>
-
 <div class="modal" id="location-modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content p-4" style="background-color: #252830">
@@ -93,8 +77,32 @@
   </div>
 </div>
 
+<div class="modal" id="flashpoint-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content p-4" style="background-color: #252830">
+      <div class="dashhead">
+        <div class="dashhead-titles">
+          <h6 class="dashhead-subtitle">Flashpoint Data</h6>
+          <h3 class="dashhead-title"></h3>
+        </div>
+        <div class="dashhead-toolbar">
+          <button type="button" style="color: white" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"  class="icon icon-circle-with-cross"></span>
+          </button>
+        </div>
+      </div>
+      <div id="flashpoint-image"></div>
+      <div class="modal-body modal-body-scoller flashpoint-body">
+        <div id="flashpoint-articles"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>  
+
 <script>
-  var article_data = {{ article_data|tojson }};
   var profile_obj = {{ profile_obj|tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>

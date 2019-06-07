@@ -1,1 +1,23 @@
 #map { height: 500px; }
+
+#flashpoint-articles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#flashpoint-articles>a {
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(170,200,255,0.5);
+  margin: 10px 0;
+  color: white;
+}
+
+#flashpoint-articles>br {
+  display: none;
+}
+
+.flashpoint-body {
+  padding: 10px 0 !important;
+}

@@ -6,9 +6,11 @@ from flask import (render_template, session, request,
 
 from flask_login import login_required, current_user, logout_user, login_user
 
+from flask_cors import cross_origin
+
 from lightweight import app
 from lightweight.mongo import db
-from lightweight.project.services.query.article_query import get_article_data
+from lightweight.project.services.query.article_processor import ArticleProcessor
 from lightweight.project.services.processor.data_processor import DataProcessor
 from lightweight.project.forms.profile_serializer import ProfileSerializer
 from lightweight.project.services.auth.user import User
@@ -104,6 +106,6 @@ def dashboard():
   profile_obj = json.loads(dumps(profile))
   if not profile:
     return redirect(url_for('profile'))
-  article_data = json.loads(dumps(get_article_data(db, profile)))
+  # article_data = json.loads(dumps(get_article_data(db, profile)))
   if request.method == 'GET':
-    return render_template('dashboard.html', profile_obj=profile_obj, article_data=article_data)
+    return render_template('dashboard.html', profile_obj=profile_obj)

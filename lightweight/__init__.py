@@ -3,6 +3,7 @@ import pymongo
 from flask import Flask
 from flask_login import LoginManager
 from flask_wtf.csrf import CsrfProtect
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -12,6 +13,10 @@ app.config['SECRET_KEY'] = SECRET_KEY if SECRET_KEY else os.urandom(32)
 
 # CSRF Protect
 csrf = CsrfProtect(app)
+
+# CORS
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # login manager
 login_manager = LoginManager()
