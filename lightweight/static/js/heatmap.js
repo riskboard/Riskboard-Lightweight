@@ -5,6 +5,12 @@ const GKG_GEOJSON_URL='https://api.gdeltproject.org/api/v1/gkg_geojson';
 
 $(() => {
   initialize_map();
+
+  $('#location-select').on('change', () => {
+    active_location_id = $('#location-select').find(':selected').val();
+    console.log(active_location_id);
+    $('#location-modal').modal('toggle');
+  });
 });
 
 const refresh_analytics = () => {
