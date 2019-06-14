@@ -8,6 +8,10 @@ $(() => {
     console.log(active_location_id);
     $('#location-modal').modal('toggle');
   });
+
+  $('.timeframe-button').on('click', (e) => {
+    refresh_map();
+  });
 });
 
 const initialize_map = () => {
@@ -27,53 +31,12 @@ const initialize_map = () => {
   });
 };
 
-var size=120;
+const refresh_map = () => {
+  // refresh the heatmap data
+  refresh_heatmap_data();
 
-var pulsingDot = {
-  width: size,
-  height: size,
-  data: new Uint8Array(size * size * 4),
-
-  onAdd: function () {
-    var canvas = document.createElement('canvas');
-    canvas.width = this.width;
-    canvas.height = this.height;
-    this.context = canvas.getContext('2d');
-  },
-
-  render: function() {
-    var duration = 1000;
-    var t = (performance.now() % duration) / duration;
-
-    var radius = size / 2 * 0.3;
-    var outerRadius = size / 2 * 0.7 * t + radius;
-    var context = this.context;
-
-    // draw outer circle
-    context.clearRect(0, 0, this.width, this.height);
-    context.beginPath();
-    context.arc(this.width / 2, this.height / 2, outerRadius, 0, Math.PI * 2);
-    context.fillStyle = 'rgba(255, 200, 200,' + (1 - t) + ')';
-    context.fill();
-
-    // draw inner circle
-    context.beginPath();
-    context.arc(this.width / 2, this.height / 2, radius, 0, Math.PI * 2);
-    context.fillStyle = 'rgba(255, 100, 100, 1)';
-    context.strokeStyle = 'white';
-    context.lineWidth = 2 + 4 * (1 - t);
-    context.fill();
-    context.stroke();
-
-    // update this image's data with data from the canvas
-    this.data = context.getImageData(0, 0, this.width, this.height).data;
-
-    // keep the map repainting
-    map.triggerRepaint();
-
-    // return `true` to let the map know that the image was updated
-    return true;
-  }
+  // refresh the point data
+  profile_obj.locations.map(refresh_loc_data);
 };
 
 const initialize_locations = () => {
@@ -118,14 +81,9 @@ const initialize_locations = () => {
       "text-color": "#ffffff",
     },
   });
-
-  map.on('click', 'locations', (e) => {
-    active_location_id = e.features[0].properties.id;
-    $('#location-modal').modal('toggle');
-  });
 };
 
-const initialize_heatmap = () => {
+const get_heatmap_data = (callback) => {
   const location_param = (loc) => `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
 
   const location_query = profile_obj.locations.map((el) => location_param(el)).join(' OR ');
@@ -133,23 +91,37 @@ const initialize_heatmap = () => {
   var params = {
     'query': `( ${location_query} ) tone<-5`,
     'mode': 'pointheatmap',
+    'timespan': TIMEFRAME,
     'format': 'geoJSON',
     'sortby': 'toneasc',
   };
 
   var query_url = `${GKG_API_GEO_URL}&${$.param( params )}`;
   $.get({url: query_url}, (resp) => {
-    var heatmap_points = resp;
-    draw_heatmap(heatmap_points);
+    var data = resp;
+    callback(data);
   });
 };
 
-const draw_heatmap = (data) => {
+const refresh_heatmap_data = () => {
+  const callback = (data) => {
+    map.getSource('articles').setData(data);
+  };
+  get_heatmap_data(callback);
+}
+
+const initialize_heatmap = () => {
+  get_heatmap_data(create_heatmap_layers);
+};
+
+const create_heatmap_layers = (data) => {
+  // add article source
   map.addSource('articles', {
     'type': 'geojson',
     'data': data,
   });
 
+  // add heatmap layer
   map.addLayer({
     'id': 'articles-heat',
     'type': 'heatmap',
@@ -213,29 +185,46 @@ const initialize_points = () => {
 };
 
 const initialize_loc_points = (loc, id) => {
+  const callback = (data) => {
+    // create the point layer
+    initialize_point_layers(data, id);
+  };
+
+  get_loc_data(loc, callback);
+};
+
+const refresh_loc_data = (loc, id) => {
+  // update data
+  const callback = (data) => {
+    map.getSource(`articles-point-data-${id}`).setData(data);
+  };
+
+  get_loc_data(loc, callback);
+}
+
+const get_loc_data = (loc, callback) => {
   const location_param = `location:"${loc.name}" OR near:${loc.coordinates[1]},${loc.coordinates[0]},100`;
 
   var params = {
     'query': `( ${location_param} ) tone<-5`,
     'mode': 'pointdata',
     'format': 'geoJSON',
+    'timespan': TIMEFRAME,
     'sortby': 'toneasc',
   };
 
   var query_url = `${GKG_API_GEO_URL}&${$.param( params )}`;
   $.get({url: query_url}, (resp) => {
-    var article_point_data = resp;
-    draw_points(article_point_data, id);
+    var data = resp;
+    callback(data);
   });
 };
 
-const draw_points = (data, id) => {
+const initialize_point_layers = (data, id) => {
   map.addSource(`articles-point-data-${id}`, {
     'type': 'geojson',
     'data': data,
   });
-
-  console.log(data);
 
   map.addLayer({
     "id": `articles-point-${id}`,
@@ -318,4 +307,53 @@ const create_article_display = (article) => {
   return `
     <li class="list-group-item"><a href="${article.properties.url}">${article.properties.url}</a></li>
   `
+};
+
+var size=120;
+
+var pulsingDot = {
+  width: size,
+  height: size,
+  data: new Uint8Array(size * size * 4),
+
+  onAdd: function () {
+    var canvas = document.createElement('canvas');
+    canvas.width = this.width;
+    canvas.height = this.height;
+    this.context = canvas.getContext('2d');
+  },
+
+  render: function() {
+    var duration = 1000;
+    var t = (performance.now() % duration) / duration;
+
+    var radius = size / 2 * 0.3;
+    var outerRadius = size / 2 * 0.7 * t + radius;
+    var context = this.context;
+
+    // draw outer circle
+    context.clearRect(0, 0, this.width, this.height);
+    context.beginPath();
+    context.arc(this.width / 2, this.height / 2, outerRadius, 0, Math.PI * 2);
+    context.fillStyle = 'rgba(255, 200, 200,' + (1 - t) + ')';
+    context.fill();
+
+    // draw inner circle
+    context.beginPath();
+    context.arc(this.width / 2, this.height / 2, radius, 0, Math.PI * 2);
+    context.fillStyle = 'rgba(255, 100, 100, 1)';
+    context.strokeStyle = 'white';
+    context.lineWidth = 2 + 4 * (1 - t);
+    context.fill();
+    context.stroke();
+
+    // update this image's data with data from the canvas
+    this.data = context.getImageData(0, 0, this.width, this.height).data;
+
+    // keep the map repainting
+    map.triggerRepaint();
+
+    // return `true` to let the map know that the image was updated
+    return true;
+  }
 };

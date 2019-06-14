@@ -16,12 +16,14 @@ class ProfileSerializer():
     company_name = data['company_name']
     themes = data['relevant_themes']
     locations = data['locations']
+    keywords = data['keywords']
 
     data = {
       '_id': self.user_id,
       'company_name': company_name,
       'relevant_themes': themes,
       'locations': locations,
+      'keywords': keywords
     }
 
     # data = self.inject_test_data(data)

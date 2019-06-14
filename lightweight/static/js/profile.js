@@ -1,6 +1,9 @@
 var selected_themes;
 
 $(() => {
+  // set keyword autocomplete
+  initialize_autocomplete();
+
   // set number of location inputs
   let num_inputs = current_profile.locations
     ? current_profile.locations.length
@@ -31,7 +34,6 @@ $(() => {
 
     // validate and get data
     form_data = get_valid_data()
-    console.log(form_data);
 
     // change request type based on whether or not current profile exists
     current_profile ? put_profile(form_data, callback) : post_profile(form_data, callback);
@@ -40,6 +42,36 @@ $(() => {
   // populate current_profile
   current_profile ? populate_current_profile() : null;
 });
+
+const get_valid_data = () => {
+  company_name = $('input[name="company_name"').val();
+
+  if (!selected_themes || selected_themes.length < 5) {
+    $('#theme-error').html(`<i class="fas fa-exclamation-triangle"></i> Please select at least 5 themes.`);
+    return false;
+  };
+
+  [loc_data, errors] = get_loc_data();
+  if (errors.length) {
+    var merged_error = errors.join(' ');
+    $('#location-error').html(`
+    <i class="fas fa-exclamation-triangle"></i> ${merged_error}`);
+    return false;
+  };
+
+  keyword_data = split($('#keyword-input').val());
+  // pop off filler element
+  keyword_data.pop();
+
+  form_data = {
+    'company_name': company_name,
+    'relevant_themes': selected_themes,
+    'locations': loc_data,
+    'keywords': keyword_data,
+  };
+
+  return JSON.stringify(form_data);
+};
 
 const input_field = (i) => {
   return `
@@ -70,30 +102,6 @@ const themes = ['Atrocity', 'Conflict', 'Cyber', 'Disaster',
   'People', 'Politics', 'Religion', 'Social', 'Sovereignty',
   'Technology', 'Terrorism', 'Trade', 'Violence', 'Weaponry']
 
-const get_valid_data = () => {
-  if (!selected_themes || selected_themes.length < 5) {
-    $('#theme-error').html(`<i class="fas fa-exclamation-triangle"></i> Please select at least 5 themes.`);
-    return false;
-  };
-
-  [loc_data, errors] = get_loc_data();
-  if (errors.length) {
-    var merged_error = errors.join(' ');
-    $('#location-error').html(`
-    <i class="fas fa-exclamation-triangle"></i> ${merged_error}`);
-    return false;
-  };
-
-  name = $('input[name="company_name"').val();
-
-  form_data = {
-    'company_name': name,
-    'relevant_themes': selected_themes,
-    'locations': loc_data,
-  };
-
-  return JSON.stringify(form_data);
-};
 
 const callback = (response) => {
   console.log(response);
@@ -182,9 +190,52 @@ const populate_current_profile = () => {
   // fill locations
   current_profile.locations.forEach((loc, id) => {
     location_fields = $(`.location-information:eq(${id}) :input`);
-    console.log(location_fields[0]);
     location_fields[0].value = loc.name;
     location_fields[1].value = loc.coordinates[0];
     location_fields[2].value = loc.coordinates[1];
   });
+
+  var kwd_text = current_profile.keywords.join(', ');
+  $('#keyword-input').val(kwd_text);
+};
+
+const split = (val) => {
+  return val.split( /,\s*/ );
+}
+
+const initialize_autocomplete = () => {
+  // keyword list
+  var available_kwds = [
+    'Education', 'Election', 'Global Warming', 'Income Inequality', 'Labor', 'Labor Dispute', 'Labor Movement',  'Politics', 'Poverty', 'Slavery', 'Warming', 
+  ];
+
+  const extract_last = (term) => {
+    return split(term).pop();
+  }
+
+  $('#keyword-input')
+    .on('keydown', (e) => {
+      if (e.keyCode === $.ui.keyCode.TAB &&
+        $(e.target).autocomplete('instance').menu.active) {
+          event.preventDefault();
+        }
+    })
+    .autocomplete({
+      minLength: 0,
+      source: function(request, response) {
+        response($.ui.autocomplete.filter(
+          available_kwds, extract_last(request.term)));
+      },
+      foucs: function() {
+        return false;
+      },
+      select: function(e, ui) {
+        var terms = split(this.value);
+        terms.pop();
+        terms.push(ui.item.value);
+        terms.push('');
+        this.value = terms.join(', ');
+        return false;
+      }
+    });
 };

@@ -19,15 +19,11 @@
     </div>
   
     <div class="dashhead-toolbar">
-      <div class="input-with-icon dashhead-toolbar-item">
-        <input type="text" value="01/01/15 - 01/08/15" class="form-control" data-provide="datepicker">
-        <span class="icon icon-calendar"></span>
-      </div>
-      <span class="dashhead-toolbar-divider hidden-xs"></span>
       <div class="btn-group dashhead-toolbar-item btn-group-thirds">
-        <button type="button" class="btn btn-outline-primary">Day</button>
-        <button type="button" class="btn btn-outline-primary active">Week</button>
-        <button type="button" class="btn btn-outline-primary">Month</button>
+        <button type="button" class="btn btn-outline-primary timeframe-button" value="1h"> Hour</button>
+        <button type="button" class="btn btn-outline-primary timeframe-button active" value="1d">Day</button>
+        <button type="button" class="btn btn-outline-primary timeframe-button" value="1w">Week</button>
+        <button type="button" class="btn btn-outline-primary timeframe-button" value="1m">Month</button>
       </div>
     </div>
   </div>
@@ -37,7 +33,7 @@
   <div class="row">
     <div class="col-3">
       <div class="dashboard-section">
-        <h4 class="mt-4">Locations</h4>
+        <h4 class="mt-2">Locations</h4>
         {% for location in profile_obj['locations'] %}
         <div class="location-select" id='{{ loop.index0 }}'>{{ location['name'] }}</div>
         {% endfor %}
@@ -45,7 +41,7 @@
     </div>
     <div class="col-9">
       <div class="dashboard-section">
-        <h4 class="mt-4">Themes</h4>
+        <h4 class="mt-2">Themes</h4>
         <div class="d-flex">
           {% for theme in profile_obj['relevant_themes'] %}
           <div class="theme-select">
@@ -55,8 +51,8 @@
         </div>
       </div>
     </div>
-    <div class="dashboard-section">
-      <h4 class="mt-4">Articles</h4>
+    <div class="dashboard-section w-100">
+      <h4 class="mt-2">Articles</h4>
       <div id="articles"></div>
     </div>
   </div>
@@ -128,6 +124,7 @@
 <script>
   var profile_obj = {{ profile_obj|tojson }};
 </script>
+
 <script src="{{ url_for('static', filename='js/themes.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>

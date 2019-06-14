@@ -9,7 +9,7 @@
 #flashpoint-articles>a {
   width: 100%;
   padding: 20px;
-  background-color: rgba(170,200,255,0.5);
+  background-color: #3987AA;
   margin: 10px 0;
   color: white;
 }
@@ -65,4 +65,8 @@
 .thumbimg {
   height: 100px;
   width: 200px;
+}
+
+.modal-content {
+  top: 200px;
 }
