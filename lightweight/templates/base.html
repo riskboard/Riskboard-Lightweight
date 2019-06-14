@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='bs_theme/v4/dist/toolkit-inverse.min.css') }}">
   <!-- Additional JS Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+
   <script src="{{ url_for('static', filename='bs_theme/v4/dist/toolkit.min.js') }}"></script>
   <title>RiskBoard</title>
 </head>
@@ -54,7 +55,7 @@
   </nav>
 
   <section class="content p-2">
-    <div class="container docs-content mx-auto p-2">
+    <div class="docs-content mx-auto p-2">
     {% for message in get_flashed_messages() %}
       <div class="flash font-white">{{ message }}</div>
     {% endfor %}
@@ -63,6 +64,7 @@
   </section>
   <!-- fontawesome icons -->
   <script src="https://kit.fontawesome.com/83aee8797b.js"></script>
+
   <script>
     var csrf_token = "{{ csrf_token() }}";
 

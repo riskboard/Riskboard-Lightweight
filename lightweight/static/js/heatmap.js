@@ -1,7 +1,4 @@
 var map;
-var active_location_id;
-const GKG_API_URL = 'https://api.gdeltproject.org/api/v2/geo/geo?';
-const GKG_GEOJSON_URL='https://api.gdeltproject.org/api/v1/gkg_geojson';
 
 $(() => {
   initialize_map();
@@ -12,10 +9,6 @@ $(() => {
     $('#location-modal').modal('toggle');
   });
 });
-
-const refresh_analytics = () => {
-  // TODO: Create function that updates parameters
-};
 
 const initialize_map = () => {
   mapboxgl.accessToken = 'pk.eyJ1IjoicmpheTk4IiwiYSI6ImNqd2FkOWE5NDA4cjEzemtkNGlkNmxqaTUifQ.Zglo0zZl1zOEf0tYynhfzw';
@@ -144,7 +137,7 @@ const initialize_heatmap = () => {
     'sortby': 'toneasc',
   };
 
-  var query_url = `${GKG_API_URL}&${$.param( params )}`;
+  var query_url = `${GKG_API_GEO_URL}&${$.param( params )}`;
   $.get({url: query_url}, (resp) => {
     var heatmap_points = resp;
     draw_heatmap(heatmap_points);
@@ -229,7 +222,7 @@ const initialize_loc_points = (loc, id) => {
     'sortby': 'toneasc',
   };
 
-  var query_url = `${GKG_API_URL}&${$.param( params )}`;
+  var query_url = `${GKG_API_GEO_URL}&${$.param( params )}`;
   $.get({url: query_url}, (resp) => {
     var article_point_data = resp;
     draw_points(article_point_data, id);
@@ -326,15 +319,3 @@ const create_article_display = (article) => {
     <li class="list-group-item"><a href="${article.properties.url}">${article.properties.url}</a></li>
   `
 };
-
-//triggered when modal is about to be shown
-$('#location-modal').on('show.bs.modal', function(e) {
-  // populate the textbox
-  $('#location-modal .dashhead-title').text(profile_obj.locations[active_location_id].name);
-  $('.location-themes').html(
-    query_result[active_location_id].themes.map(create_theme_statcard).join('')
-  );
-  $('.location-articles').html(
-    article_data[active_location_id].articles.features.map(create_article_display).join('')
-  );
-});

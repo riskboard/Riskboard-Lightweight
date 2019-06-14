@@ -1,8 +1,8 @@
-.bg-black, .bg-black-shadow {
+.bg-black {
   background-color: black;
 }
 
-.bg-black-shadow {
+.bd-shadow {
   box-shadow: 5px 3px 10px black;
 }
 
