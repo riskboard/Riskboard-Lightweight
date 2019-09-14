@@ -7,6 +7,14 @@ const GKG_API_DOC_URL = 'https://api.gdeltproject.org/api/v2/doc/doc?';
 
 const GKG_GEOJSON_URL='https://api.gdeltproject.org/api/v1/gkg_geojson';
 
+// From GDELT Project Page. "writedate()" is a function output by the gdelt API. 
+const writedate = (el, ds) => {
+  var date = new Date(ds);
+  hours = date.getHours();
+  if (hours > 12) { ampm = 'pm'; hours-=12; } else { ampm = 'am' }; if (hours == 12) { ampm='pm'; }
+  document.getElementById(el).innerHTML = ((date.getMonth()+1) + '/' + date.getDate() + '/' + date.getFullYear() + ' ' + hours + ':' + ('0' + date.getMinutes()).slice(-2) + ampm);
+}
+
 $(() => {
   initialize_timeframe();
   load_keyword_articles();
@@ -44,6 +52,7 @@ const load_keyword_articles = () => {
 
   const display_article_data = (kwd, html) => {
     var gkg_html = $(html).filter('#maincontent').html();
+    console.log('GKG: ', gkg_html);
     var to_append = article_list_html(kwd, gkg_html);
     $('#articles').append(to_append);
   };

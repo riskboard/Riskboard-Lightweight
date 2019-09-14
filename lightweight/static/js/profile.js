@@ -5,7 +5,7 @@ $(() => {
   initialize_autocomplete();
 
   // set number of location inputs
-  let num_inputs = current_profile.locations
+  let num_inputs = (current_profile && current_profile.locations)
     ? current_profile.locations.length
     : 3;
 
