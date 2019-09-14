@@ -94,6 +94,7 @@ const get_heatmap_data = (callback) => {
     'timespan': TIMEFRAME,
     'format': 'geoJSON',
     'sortby': 'toneasc',
+    'maxrecords': 1000,
   };
 
   var query_url = `${GKG_API_GEO_URL}&${$.param( params )}`;

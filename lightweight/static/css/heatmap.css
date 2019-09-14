@@ -1,4 +1,4 @@
-#map { height: 500px; }
+#map { height: 650px; }
 
 #flashpoint-articles {
   display: flex;
@@ -30,18 +30,10 @@
   cursor: pointer;
 }
 
-.location-select {
-  width: 200px;
-  text-align: center;
-  padding: 20px;
-  margin: 5px 0;
-  background-color:#3987AA;
-}
-
-.theme-select {
+.location-select, .theme-select {
   position: relative;
   width: 110px;
-  height: 150px;
+  height: 60px;
   font-size: 0.8em;
   margin: 4px;
   padding: 10px;
@@ -59,7 +51,7 @@
   border-radius: 4px;
   padding: 20px;
   margin: 20px auto;
-  min-height: 300px;
+  min-height: 150px;
 }
 
 .thumbimg {

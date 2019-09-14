@@ -11,13 +11,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
   <div class="dashhead mt-2">
     <div class="dashhead-titles">
       <h6 class="dashhead-subtitle">Dashboard</h6>
       <h3 class="dashhead-title"><span class='icon icon-globe'></span> Incidence Heatmap</h3>
     </div>
-  
+
     <div class="dashhead-toolbar">
       <div class="btn-group dashhead-toolbar-item btn-group-thirds">
         <button type="button" class="btn btn-outline-primary timeframe-button" value="1h"> Hour</button>
@@ -28,21 +28,23 @@
     </div>
   </div>
 
-  <div id="map"></div>
-
   <div class="row">
-    <div class="col-3">
+    <div class="col-4">
       <div class="dashboard-section">
         <h4 class="mt-2">Locations</h4>
-        {% for location in profile_obj['locations'] %}
-        <div class="location-select" id='{{ loop.index0 }}'>{{ location['name'] }}</div>
-        {% endfor %}
+        <div class="d-flex flex-wrap">
+          {% for location in profile_obj['locations'] %}
+          <div class="location-select" id='{{ loop.index0 }}'>
+            <span class="text-bottom">{{ location['name'] }}</span>
+          </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
-    <div class="col-9">
+    <div class="col-8">
       <div class="dashboard-section">
         <h4 class="mt-2">Themes</h4>
-        <div class="d-flex">
+        <div class="d-flex flex-wrap">
           {% for theme in profile_obj['relevant_themes'] %}
           <div class="theme-select">
             <span class="text-bottom">{{ theme }}</span>
@@ -51,13 +53,13 @@
         </div>
       </div>
     </div>
-    <div class="dashboard-section w-100">
-      <h4 class="mt-2">Articles</h4>
-      <div id="articles"></div>
-    </div>
   </div>
-
-
+  <div id="map"></div>
+  <iframe src="https://api.gdeltproject.org/api/v1/search_ftxtsearch/search_ftxtsearch?query=sourcecountry:nigeria&output=timeline&sort=desc" height="500" scrolling="no" width=500></iframe>
+  <div class="dashboard-section w-100">
+    <h4 class="mt-2">Articles</h4>
+    <div id="articles"></div>
+  </div>
 </div>
 
 <div class="modal" id="location-modal" tabindex="-1" role="dialog">
